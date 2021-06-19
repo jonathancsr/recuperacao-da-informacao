@@ -5,7 +5,9 @@ from urllib.parse import urlparse, urljoin
 
 
 class PageFetcher(Thread):
+
     def __init__(self, obj_scheduler):
+        super().__init__()
         self.obj_scheduler = obj_scheduler
 
     def request_url(self, obj_url):
@@ -14,7 +16,6 @@ class PageFetcher(Thread):
 
             obj_url: Instancia da classe ParseResult com a URL a ser requisitada.
         """
-
         response = requests.get(obj_url.geturl(), headers={"User-Agent": self.obj_scheduler.str_usr_agent})
         if "text/html" in response.headers['content-type']:
             return response.content
@@ -25,7 +26,6 @@ class PageFetcher(Thread):
         """
         Retorna os links do conteúdo bin_str_content da página já requisitada obj_url
         """
-
         """
             Percorre o codigo retornado, selecioando as tags HTML <a>
             Caso essa tag possua http no componente 'href' é criado um novo objeto de urlparse
@@ -54,22 +54,21 @@ class PageFetcher(Thread):
         # Nova url para coletar
         url_to_parse = self.obj_scheduler.get_next_url()
         self.obj_scheduler.count_fetched_page()
+        print(f"Buscando {url_to_parse[0].geturl()} na profundidade {url_to_parse[1]}")
         # Tenta coletar o html da url
-        html = self.request_url(url_to_parse)
+        html = self.request_url(url_to_parse[0])
 
-        # Caso o não tenha html 
+        # Caso o não tenha html
         if html is None:
             return False
 
-        print(url_to_parse.geturl())
         # Desconbre os novos links do html buscado
-        new_links = self.discover_links(html)
+        new_links = self.discover_links(obj_url=url_to_parse[0], int_depth=url_to_parse[1], bin_str_content=html)
 
         # Adiciona os novos links no escalonador
         for link, int_depth in new_links:
-            print(link)
             self.obj_scheduler.add_new_page(link, int_depth)
 
     def run(self):
-        while self.obj_scheduler.has_finished_crawl():
+        while self.obj_scheduler.has_finished_crawl() is False:
             self.crawl_new_url()
