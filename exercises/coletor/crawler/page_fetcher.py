@@ -14,10 +14,12 @@ class PageFetcher(Thread):
 
             obj_url: Instancia da classe ParseResult com a URL a ser requisitada.
         """
-        response = None
 
+        response = requests.get(obj_url.geturl(), headers={"User-Agent": self.obj_scheduler.str_usr_agent})
+        if "text/html" in response.headers['content-type']:
+            return response.content
 
-        return response.content
+        return None
 
     def discover_links(self, obj_url, int_depth, bin_str_content):
         """
