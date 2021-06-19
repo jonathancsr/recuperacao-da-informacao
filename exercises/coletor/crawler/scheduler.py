@@ -3,11 +3,12 @@ from util.threads import synchronized
 from collections import OrderedDict
 from .domain import Domain
 
+
 class Scheduler():
-    #tempo (em segundos) entre as requisições
+    # tempo (em segundos) entre as requisições
     TIME_LIMIT_BETWEEN_REQUESTS = 20
 
-    def __init__(self,str_usr_agent,int_page_limit,int_depth_limit,arr_urls_seeds):
+    def __init__(self, str_usr_agent, int_page_limit, int_depth_limit, arr_urls_seeds):
         """
             Inicializa o escalonador. Atributos:
                 - `str_usr_agent`: Nome do `User agent`. Usualmente, é o nome do navegador, em nosso caso,  será o nome do coletor (usualmente, terminado em `bot`)
@@ -27,7 +28,6 @@ class Scheduler():
         self.set_discovered_urls = set()
         self.dic_robots_per_domain = {}
 
-
     @synchronized
     def count_fetched_page(self):
         """
@@ -39,35 +39,46 @@ class Scheduler():
         """
             Verifica se finalizou a coleta
         """
-        if(self.int_page_count > self.int_page_limit):
+        if (self.int_page_count > self.int_page_limit):
             return True
         return False
 
-
     @synchronized
-    def can_add_page(self,obj_url,int_depth):
+    def can_add_page(self, obj_url, int_depth):
         """
             Retorna verdadeiro caso  profundade for menor que a maxima
             e a url não foi descoberta ainda
         """
-        return (obj_url not in self.set_discovered_urls) and (int_depth < self.int_depth_limit) 
+        return (obj_url not in self.set_discovered_urls) and (int_depth < self.int_depth_limit)
 
     @synchronized
-    def add_new_page(self,obj_url,int_depth):
+    def add_new_page(self, obj_url, int_depth):
         """
             Adiciona uma nova página
             obj_url: Objeto da classe ParseResult com a URL a ser adicionada
             int_depth: Profundidade na qual foi coletada essa URL
         """
-        #https://docs.python.org/3/library/urllib.parse.html
+        # https://docs.python.org/3/library/urllib.parse.html
+        """
+            Verifica se é possivel adionar a nova pagina
+        """
+        if self.can_add_page(obj_url=obj_url, int_depth=int_depth):
+            """
+                Caso o dominio não exista, é criado uma nova instancia se o dominio existe é 
+                adicionado a lista de tuplas
+                domain_new: Objeto da classe Domain com novo dominio
+            """
+            domain_new = Domain(nam_domain=obj_url.netloc,
+                                int_time_limit_between_requests=self.TIME_LIMIT_BETWEEN_REQUESTS)
+            if domain_new in self.dic_url_per_domain:
+                self.dic_url_per_domain[domain_new] += (obj_url, int_depth)
+            else:
+                self.dic_url_per_domain[domain_new] = [(obj_url, 1)]
 
+            self.set_discovered_urls.add(obj_url)
+
+            return True
         return False
-
-
-
-
-
-
 
     @synchronized
     def get_next_url(self):
@@ -75,13 +86,29 @@ class Scheduler():
         Obtem uma nova URL por meio da fila. Essa URL é removida da fila.
         Logo após, caso o servidor não tenha mais URLs, o mesmo também é removido.
         """
-        return None,None
 
-    def can_fetch_page(self,obj_url):
+        """
+        É percorrido o dicionário de URL's e verificado se o domínio é acessível
+        Se não acessível:  passa para o próximo elemento do dicionário
+        Se acessível: marca como acessada (accessed_now()), remove a URL da lista, retorna a url e sua profundidade
+        Caso o dominio não conter URL's remove o domínio do dicionário     
+        """
+        for domain, urls in self.didic_url_per_domain.items():
+            if domain.is_accessible():
+                domain.accessed_now()
+                if len(urls) > 0:
+                    obj_url, int_depth = urls.pop()
+                else:
+                    self.dic_url_per_domain.pop(domain)
+                    return None, None
+
+                return obj_url, int_depth
+
+        return None, None
+
+    def can_fetch_page(self, obj_url):
         """
         Verifica, por meio do robots.txt se uma determinada URL pode ser coletada
         """
-
-
 
         return False
