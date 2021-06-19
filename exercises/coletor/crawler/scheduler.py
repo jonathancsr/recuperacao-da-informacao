@@ -50,7 +50,7 @@ class Scheduler():
             Retorna verdadeiro caso  profundade for menor que a maxima
             e a url não foi descoberta ainda
         """
-        return False
+        return (obj_url not in self.set_discovered_urls) and (int_depth < self.int_depth_limit) 
 
     @synchronized
     def add_new_page(self,obj_url,int_depth):
