@@ -1,4 +1,5 @@
 from urllib import robotparser
+import time
 from util.threads import synchronized
 from collections import OrderedDict
 from .domain import Domain
@@ -91,18 +92,27 @@ class Scheduler():
         É percorrido o dicionário de URL's e verificado se o domínio é acessível
         Se não acessível:  passa para o próximo elemento do dicionário
         Se acessível: marca como acessada (accessed_now()), remove a URL da lista, retorna a url e sua profundidade
-        Caso o dominio não conter URL's remove o domínio do dicionário     
+        Caso o array de urls estiver vazio remove o domínio do dicionário     
         """
-        for domain, urls in self.didic_url_per_domain.items():
+        for domain, urls in self.dic_url_per_domain.items():
             if domain.is_accessible():
                 domain.accessed_now()
                 if len(urls) > 0:
-                    obj_url, int_depth = urls.pop()
+                    obj_url, int_depth = urls.pop(0)
+                    if len(urls) == 0:
+                        self.dic_url_per_domain.pop(domain)
                 else:
                     self.dic_url_per_domain.pop(domain)
                     return None, None
 
                 return obj_url, int_depth
+
+        """
+        Caso não encontre uma url para coletar, a thread espera pelo tempo definido na variavel TIME_LIMIT_BETWEEN_REQUESTS
+        e tenta novamente
+        """
+        time.sleep(self.TIME_LIMIT_BETWEEN_REQUESTS)
+        self.get_next_url(self)
 
         return None, None
 
