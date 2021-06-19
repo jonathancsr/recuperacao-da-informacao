@@ -1,5 +1,7 @@
 from urllib import robotparser
 import time
+from urllib.parse import urlparse
+
 from util.threads import synchronized
 from collections import OrderedDict
 from .domain import Domain
@@ -28,6 +30,9 @@ class Scheduler():
         self.dic_url_per_domain = OrderedDict()
         self.set_discovered_urls = set()
         self.dic_robots_per_domain = {}
+
+        for str_url in arr_urls_seeds:
+            self.add_new_page(str_url, 1)
 
     @synchronized
     def count_fetched_page(self):
@@ -112,7 +117,6 @@ class Scheduler():
         e tenta novamente
         """
         time.sleep(self.TIME_LIMIT_BETWEEN_REQUESTS)
-        self.get_next_url(self)
 
         return None, None
 
@@ -120,5 +124,19 @@ class Scheduler():
         """
         Verifica, por meio do robots.txt se uma determinada URL pode ser coletada
         """
-
-        return False
+        """
+        É verificado se o robots.txt ja foi requisitado verificando o dicionário dic_robots_per_domain
+        Se não foi requisitado utiliza-se o RobotFileParser passando a URL do dominio, fazendo a leitura do robots.txt
+        E adiciona o robot no dicionário dic_robots_per_domain
+        Por fim verifica-se através do metodo can_fetch(), passando o usr_agent e url, se possui permissão 
+        """
+        if obj_url.netloc in self.dic_robots_per_domain:
+            robot = self.dic_robots_per_domain[obj_url.netloc]
+        else:
+            try:
+                robot = robotparser.RobotFileParser(url=obj_url.geturl() + '/robots.txt')
+                robot.read()
+                self.dic_robots_per_domain[obj_url.netloc] = robot
+            except:
+                return False
+        return robot.can_fetch(self.str_usr_agent, obj_url.geturl())
