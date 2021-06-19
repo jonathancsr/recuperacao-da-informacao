@@ -1,7 +1,6 @@
 from urllib import robotparser
 import time
 from urllib.parse import urlparse
-
 from util.threads import synchronized
 from collections import OrderedDict
 from .domain import Domain
@@ -32,7 +31,7 @@ class Scheduler():
         self.dic_robots_per_domain = {}
 
         for str_url in arr_urls_seeds:
-            self.add_new_page(str_url, 1)
+            self.add_new_page(str_url, 0)
 
     @synchronized
     def count_fetched_page(self):
@@ -79,7 +78,7 @@ class Scheduler():
             if domain_new in self.dic_url_per_domain:
                 self.dic_url_per_domain[domain_new] += (obj_url, int_depth)
             else:
-                self.dic_url_per_domain[domain_new] = [(obj_url, 1)]
+                self.dic_url_per_domain[domain_new] = [(obj_url, int_depth)]
 
             self.set_discovered_urls.add(obj_url)
 
