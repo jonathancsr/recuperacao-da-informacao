@@ -16,10 +16,13 @@ class Domain():
 		return False
 
 	def __hash__(self):
-		return None
+		return hash(self.nam_domain)
 
 	def __eq__(self, domain):
-		return None
+		if isinstance(domain, str):
+			return domain == self.nam_domain
+		else:
+			return domain.nam_domain == self.nam_domain
 
 	def __str__(self):
 		return self.nam_domain
