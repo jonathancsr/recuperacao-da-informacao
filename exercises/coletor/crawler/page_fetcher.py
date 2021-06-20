@@ -30,22 +30,22 @@ class PageFetcher(Thread):
             Percorre o codigo retornado, selecioando as tags HTML <a>
             Caso essa tag possua http no componente 'href' é criado um novo objeto de urlparse
             Caso contrario é utilizado o obj_url recebido como paramentro para ser a url base
-            Se o dominio é igual ao recebido no parametro pelo obj_url a profundidade é oincrementada
+            Se o dominio é igual ao recebido no parametro pelo obj_url a profundidade é incrementada
             Caso contrario a profundidade é 0
         """
         soup = BeautifulSoup(bin_str_content, features="lxml")
         for link in soup.select('a'):
-            if 'http' in link['href']:
-                obj_new_url = urlparse(link['href'])
-            else:
-                obj_new_url = urlparse(obj_url.geturl() + '/' + link['href'])
 
-            if obj_new_url.netloc == obj_url.netloc:
-                int_new_depth = int_depth + 1
+            href = link.get("href")
+            if href:
+                obj_new_url = urlparse(obj_url.geturl() + href)
+                if obj_url.netloc == obj_new_url.netloc:
+                    int_new_depth = int_depth+1
+                else:
+                    int_new_depth = 0
+                yield obj_new_url, int_new_depth
             else:
-                int_new_depth = 0
-
-            yield obj_new_url, int_new_depth
+                yield ("", 0)
 
     def crawl_new_url(self):
         """
