@@ -44,7 +44,7 @@ class Scheduler():
         """
             Verifica se finalizou a coleta
         """
-        if (self.int_page_count > self.int_page_limit):
+        if (self.int_page_count >= self.int_page_limit):
             return True
         return False
 
@@ -54,7 +54,8 @@ class Scheduler():
             Retorna verdadeiro caso  profundade for menor que a maxima
             e a url não foi descoberta ainda
         """
-        return (obj_url not in self.set_discovered_urls) and (int_depth < self.int_depth_limit)
+
+        return (obj_url.geturl() not in self.set_discovered_urls) and (int_depth < self.int_depth_limit)
 
     @synchronized
     def add_new_page(self, obj_url, int_depth):
@@ -76,11 +77,11 @@ class Scheduler():
             domain_new = Domain(nam_domain=obj_url.netloc,
                                 int_time_limit_between_requests=self.TIME_LIMIT_BETWEEN_REQUESTS)
             if domain_new in self.dic_url_per_domain:
-                self.dic_url_per_domain[domain_new] += (obj_url, int_depth)
+                self.dic_url_per_domain[domain_new] += [(obj_url, int_depth)]
             else:
                 self.dic_url_per_domain[domain_new] = [(obj_url, int_depth)]
-
-            self.set_discovered_urls.add(obj_url)
+            # print((obj_url, int_depth))
+            self.set_discovered_urls.add(obj_url.geturl())
 
             return True
         return False
@@ -102,14 +103,13 @@ class Scheduler():
             if domain.is_accessible():
                 domain.accessed_now()
                 if len(urls) > 0:
-                    obj_url, int_depth = urls.pop(0)
+                    next_url = urls.pop(0)
+                    obj_url, int_depth = next_url
                     if len(urls) == 0:
                         self.dic_url_per_domain.pop(domain)
+                    return obj_url, int_depth
                 else:
                     self.dic_url_per_domain.pop(domain)
-                    return None, None
-
-                return obj_url, int_depth
 
         """
         Caso não encontre uma url para coletar, a thread espera pelo tempo definido na variavel TIME_LIMIT_BETWEEN_REQUESTS
