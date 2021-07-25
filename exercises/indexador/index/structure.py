@@ -263,5 +263,3 @@ class FileIndex(Index):
                     term_ocurrence_from_file = self.next_from_file(idx_file)
 
         return count_documents_with_term
-
-59
