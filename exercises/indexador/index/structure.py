@@ -198,6 +198,7 @@ class FileIndex(Index):
                     next_save = term_ocurrence_from_list
                     term_ocurrence_from_list = self.next_from_list()
                 next_save.write(new_idx_file)
+
         self.lst_occurrences_tmp = []
         idx_file.close()
         gc.enable()
@@ -210,21 +211,20 @@ class FileIndex(Index):
         dic_ids_por_termo = {}
         for str_term, obj_term in self.dic_index.items():
             dic_ids_por_termo[obj_term.term_id] = str_term
-        list_discovery_id = {}
+        list_count_ocurrence = {}
 
         with open(self.str_idx_file_name, 'rb') as idx_file:
             term_ocurrence_from_file = self.next_from_file(idx_file)
             int_size_of_occur = idx_file.tell()
 
             while term_ocurrence_from_file != None:
-                if term_ocurrence_from_file.term_id not in list_discovery_id:
-                    docs_with_ocurrence = 1
-                    list_discovery_id[term_ocurrence_from_file.term_id] = docs_with_ocurrence
+                if term_ocurrence_from_file.term_id not in list_count_ocurrence:
+                   list_count_ocurrence[term_ocurrence_from_file.term_id] = 1
                 else:
-                    list_discovery_id[term_ocurrence_from_file.term_id] += 1
+                    list_count_ocurrence[term_ocurrence_from_file.term_id] += 1
                 term_ocurrence_from_file = self.next_from_file(idx_file)
 
-            for id_elemnt, obj_element in list_discovery_id.items():
+            for id_elemnt, obj_element in list_count_ocurrence.items():
                 if id_elemnt > 1:
                     count_terms = self.dic_index[dic_ids_por_termo[id_elemnt - 1]].doc_count_with_term
                     last_byte_position = self.dic_index[dic_ids_por_termo[id_elemnt - 1]].term_file_start_pos
