@@ -135,7 +135,7 @@ class TermFilePosition:
 
 
 class FileIndex(Index):
-    TMP_OCCURRENCES_LIMIT = 1000000
+    TMP_OCCURRENCES_LIMIT = 100000000
 
     def __init__(self):
         super().__init__()
@@ -179,7 +179,6 @@ class FileIndex(Index):
 
         # ordena pelo term_id, doc_id
         self.lst_occurrences_tmp.sort()
-
         if self.str_idx_file_name is None:
             self.str_idx_file_name = f"occur_index_{self.idx_file_counter}.idx"
             idx_file = open(self.str_idx_file_name, "wb")
@@ -207,6 +206,11 @@ class FileIndex(Index):
     def finish_indexing(self):
         if len(self.lst_occurrences_tmp) > 0:
             self.save_tmp_occurrences()
+
+        with open("vocabulary.txt", "wt") as vocabulary_term:
+            for str_term, obj_term in self.dic_index.items():
+                vocabulary_term.write(f"Termo: {str_term} term_id: {obj_term.term_id}\n")
+
 
         dic_ids_por_termo = {}
         for str_term, obj_term in self.dic_index.items():

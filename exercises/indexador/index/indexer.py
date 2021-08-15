@@ -1,6 +1,7 @@
 from nltk.stem.snowball import SnowballStemmer
 from bs4 import BeautifulSoup
 import string
+from datetime import datetime
 from nltk.tokenize import word_tokenize
 import nltk
 import os
@@ -93,15 +94,26 @@ class HTMLIndexer:
     def index_text(self,doc_id:int, text_html:str):
         text = HTMLIndexer.cleaner.html_to_plain_text(text_html)
         dic_words = self.text_word_count(text)
+
         for word in dic_words:
             self.index.index(word, doc_id, dic_words[word])
 
     def index_text_dir(self,path:str):
+        count = 0
         for str_sub_dir in os.listdir(path):
             path_sub_dir = f"{path}/{str_sub_dir}"
             ## Condicional escrita para rodar o programa em pastas do MAC OS
             if str_sub_dir not in '.DS_Store':
                 for file_name in os.listdir(path_sub_dir):
+                    print(f"Arquivo -> {count}")
                     file_path = f"{path_sub_dir}/{file_name}"
                     with open(file_path, "rb") as file:
+                        intit_time = datetime.now()
                         self.index_text(int((file_name.split("."))[0]), file)
+                        end_time = datetime.now()
+                        spend_time = end_time - intit_time
+                    with open("times.txt", "a", encoding="utf-8") as file:
+                        file.write(file_path+":")
+                        file.write(f"{spend_time.total_seconds()}\n")
+                    count += 1
+        self.index.finish_indexing()
