@@ -103,9 +103,9 @@ class HTMLIndexer:
         for str_sub_dir in os.listdir(path):
             path_sub_dir = f"{path}/{str_sub_dir}"
             ## Condicional escrita para rodar o programa em pastas do MAC OS
+            print(f"Arquivo -> {count}")
             if str_sub_dir not in '.DS_Store':
                 for file_name in os.listdir(path_sub_dir):
-                    print(f"Arquivo -> {count}")
                     file_path = f"{path_sub_dir}/{file_name}"
                     with open(file_path, "rb") as file:
                         intit_time = datetime.now()
@@ -116,4 +116,7 @@ class HTMLIndexer:
                         file.write(file_path+":")
                         file.write(f"{spend_time.total_seconds()}\n")
                     count += 1
+        with open("vocabulary.txt", "a", encoding="utf-8") as vocabulary_term:
+            for str_term, obj_term in self.dic_index.items():
+                vocabulary_term.write(f"Termo: {str_term} term_id: {obj_term.term_id}\n")
         self.index.finish_indexing()

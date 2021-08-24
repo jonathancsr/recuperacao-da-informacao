@@ -7,11 +7,6 @@ import tracemalloc
 import unittest
 from random import randrange,seed
 
-
-
-
-
-
 class PerformanceTest(unittest.TestCase):
     NUM_DOCS = 2000
     NUM_TERM_PER_DOC = 500
@@ -50,13 +45,10 @@ class PerformanceTest(unittest.TestCase):
                 #indiceTeste.index(vocabulario[(count+1)%15625], d, (count%10)+1);
                 if count%50000==0:
                     self.print_status(count,PerformanceTest.NUM_DOCS*PerformanceTest.NUM_TERM_PER_DOC)
-
                 count+=1
         return count
 
     def test_performance(self):
-
-
         print("Criando vocabulário...")
         self.vocabulary = self.create_vocabulary()
 

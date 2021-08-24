@@ -207,9 +207,7 @@ class FileIndex(Index):
         if len(self.lst_occurrences_tmp) > 0:
             self.save_tmp_occurrences()
 
-        with open("vocabulary.txt", "wt") as vocabulary_term:
-            for str_term, obj_term in self.dic_index.items():
-                vocabulary_term.write(f"Termo: {str_term} term_id: {obj_term.term_id}\n")
+
 
 
         dic_ids_por_termo = {}
